@@ -68,7 +68,7 @@ with open(logInput,'r') as logFile:
 		minute = reqTime[2]
 		second = reqTime[3]
 		day = requestDate[0]
-		month = months.index(requestDate[1])
+		month = months.index(requestDate[1])+1
 		year = requestDate[2]
 		timeZone = requestData[4]
 		timeZone = timeZone.replace(']','')
@@ -95,10 +95,17 @@ with open(logInput,'r') as logFile:
 		lastHour.append(requestDateTime)				
 		lastHour = removeOldEvents(lastHour,requestDateTime, 3600)
 		
-		activeHours.consider(requestDateTime - datetime.timedelta(hours=1),len(lastHour))
+		#activeHours.consider(requestDateTime - datetime.timedelta(hours=1),len(lastHour))
+		# Hour method defined by HTTP log entry instead of HTTP log exit
+		activeHours.consider(lastHour[0],len(lastHour))
 		activeContent.consider(content,bytes)
 		securityGuard.assess(request,host,requestDateTime,command,replyCode)
 
+# Empty remaining events in lastHour for consideration
+remainingHours = len(lastHour)
+for remainingHour in range(0,remainingHours):
+	requestDateTime = lastHour.pop(0)
+	activeHours.consider(requestDateTime,len(lastHour)+1)
 
 activeHosts.report(outputLocation=hostsOutput)
 activeContent.report(outputLocation=resourcesOutput,includeScore=False)

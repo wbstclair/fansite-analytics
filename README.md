@@ -22,9 +22,10 @@
 	datetime
 	sys
 
-The python script which implements these features leverages 2 classes, topList and securityCheck—both of which use hashmaps to maintain near O(1) runspeed scaling up to millions of unique hosts and resources.
+The python script which implements these features leverages 2 classes, topList and securityCheck—both of which use hashmaps to maintain near O(1) runspeed scaling up to millions of unique hosts and resources. While it does not pass tests for blocked, the blocked test difference is only from quote-kind present in the test script (but, seemingly, not in the log file).
 
 topList documentation:
+
 	topList is a class for managing rankings of names based on a metric. The top
 	listLength number of rankings will be maintained, with all other names and scores
 	summed in a hashmap self.memoHash. 

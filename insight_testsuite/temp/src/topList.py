@@ -37,9 +37,10 @@ class topList:
 			# If this trips ValueError, eventName isn't on the list
 			prevIndex = self.names.index(eventName)
 			# Remove from previous list, and add to the appropriate location
-			self.names.remove(eventName)
-			self.scores.remove(self.scores[prevIndex])
-			self.add(eventName,score)
+			if self.scores[prevIndex] < score:
+				self.names.remove(eventName)
+				self.scores.remove(self.scores[prevIndex])
+				self.add(eventName,score)
 		except ValueError:
 			valueAdded = False
 			for currentIndex in range(0,len(self.scores)):
@@ -60,14 +61,15 @@ class topList:
 	
 	def consider(self,eventName,scoreIncrement):
 		if self.isDate:
-			if scoreIncrement >= self.listMinimum:
+			if scoreIncrement >= self.listMinimum or len(self.scores) < self.listLength:
 				self.add(eventName,scoreIncrement)
 		else: 
 			if eventName in self.memoHash:
 				self.memoHash[eventName] = self.memoHash[eventName] + scoreIncrement
 			else:
 				self.memoHash[eventName] = scoreIncrement
-			if self.memoHash[eventName] >= self.listMinimum:
+			if self.memoHash[eventName] >= self.listMinimum \
+			or len(self.scores) < self.listLength:
 				self.add(eventName,self.memoHash[eventName])
 	
 	def report(self,outputLocation=None,includeScore=True):
@@ -88,7 +90,8 @@ class topList:
 	
 	def nameFormat(self,name):
 		if self.isDate:
-			outputString = name.strftime("%d/%b/%Y:%I:%M:%S -0400")
+			outputString = name# + datetime.timedelta(hours=1)
+			outputString = outputString.strftime("%d/%b/%Y:%H:%M:%S -0400")
 			#outputString = str(name)
 		else:
 			outputString = name
