@@ -12,60 +12,26 @@
         output: 5th argument 		example: '../log_output/blocked.txt'
 
   input: 1st argument 				example: '../log_input/log.txt'
+  
+  dependencies:
+  	topList.py
+  	securityCheck.py
 """
 
 import datetime
 import sys
 import topList
 import securityCheck
-import string
 
 def removeOldEvents(eventList, datetimeEvent, secondsOld):
 	# remove old events
 	for event in eventList:
 		timeDifference = datetimeEvent - event
 		if int(timeDifference.total_seconds()) > secondsOld:
-			#print str(event)
 			eventList.remove(event)
 		else:
 			break
 	return eventList
-
-def unicodetoascii(text):
-
-    uni2ascii = {
-            ord('\xe2\x80\x99'.decode('utf-8')): ord("'"),
-            ord('\xe2\x80\x9c'.decode('utf-8')): ord('"'),
-            ord('\xe2\x80\x9d'.decode('utf-8')): ord('"'),
-            ord('\xe2\x80\x9e'.decode('utf-8')): ord('"'),
-            ord('\xe2\x80\x9f'.decode('utf-8')): ord('"'),
-            ord('\xc3\xa9'.decode('utf-8')): ord('e'),
-            ord('\xe2\x80\x9c'.decode('utf-8')): ord('"'),
-            ord('\xe2\x80\x93'.decode('utf-8')): ord('-'),
-            ord('\xe2\x80\x92'.decode('utf-8')): ord('-'),
-            ord('\xe2\x80\x94'.decode('utf-8')): ord('-'),
-            ord('\xe2\x80\x94'.decode('utf-8')): ord('-'),
-            ord('\xe2\x80\x98'.decode('utf-8')): ord("'"),
-            ord('\xe2\x80\x9b'.decode('utf-8')): ord("'"),
-
-            ord('\xe2\x80\x90'.decode('utf-8')): ord('-'),
-            ord('\xe2\x80\x91'.decode('utf-8')): ord('-'),
-
-            ord('\xe2\x80\xb2'.decode('utf-8')): ord("'"),
-            ord('\xe2\x80\xb3'.decode('utf-8')): ord("'"),
-            ord('\xe2\x80\xb4'.decode('utf-8')): ord("'"),
-            ord('\xe2\x80\xb5'.decode('utf-8')): ord("'"),
-            ord('\xe2\x80\xb6'.decode('utf-8')): ord("'"),
-            ord('\xe2\x80\xb7'.decode('utf-8')): ord("'"),
-
-            ord('\xe2\x81\xba'.decode('utf-8')): ord("+"),
-            ord('\xe2\x81\xbb'.decode('utf-8')): ord("-"),
-            ord('\xe2\x81\xbc'.decode('utf-8')): ord("="),
-            ord('\xe2\x81\xbd'.decode('utf-8')): ord("("),
-            ord('\xe2\x81\xbe'.decode('utf-8')): ord(")"),
-
-                            }
-    return text.decode('utf-8').translate(uni2ascii).encode('ascii')
 
 # ./src/process_log.py 
 #./log_input/log.txt
@@ -88,15 +54,10 @@ months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', \
 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 lastHour = list()
 
-lineNum = 1
-print logInput
+
 with open(logInput,'r') as logFile:
 	for request in logFile:
 		# Parse the request
-		print request
-		request.replace('\n','')
-		print 'replaced:'
-		print request.split()
 		requestData = request.split()
 		host = requestData[0]
 		reqTime = requestData[3]
@@ -113,28 +74,9 @@ with open(logInput,'r') as logFile:
 		timeZone = timeZone.replace(']','')
 		requestDateTime = datetime.datetime(int(year), \
 		int(month),int(day),int(hour),int(minute),int(second))
-		if isinstance(request,str):
-			print 'string'
-		if isinstance(request,unicode):
-			print 'unicode'
-		print reqTime
-		if isinstance(request.split("'")[0],unicode):
-			print 'UNICODE'
-		
-		commandParse = request.split("'")[0]
-		if "\xe2\x80\x9c" in commandParse:
-			commandParse = unicodetoascii(request.split("'")[0])[1]
-			commandParse = commandParse.replace('\n','')
-		else:
-			commandParse = commandParse[1]
-		
-		#if request.split('"')
-		#commandParse = unicodetoascii(request.split("'")[0])[1]
-		#req = request.replace('"','**')
-		#print(req.split('"'))
-		print(request.split('"'))
-		#commandParse = request.split('"')
-		#commandParse = unicodetoascii(request.split("'")[0])
+
+		commandParse = request.split('"')
+		commandParse = commandParse[1]
 		commandParse = commandParse.split()
 		if len(commandParse) > 1:
 			content = commandParse[1]
@@ -156,15 +98,9 @@ with open(logInput,'r') as logFile:
 		activeHours.consider(requestDateTime - datetime.timedelta(hours=1),len(lastHour))
 		activeContent.consider(content,bytes)
 		securityGuard.assess(request,host,requestDateTime,command,replyCode)
-		
-		lineNum = lineNum + 1
-		if lineNum % 100000 == 0:
-			print lineNum
-			#print activeHours
-			#break
 
 
 activeHosts.report(outputLocation=hostsOutput)
-activeContent.report(outputLocation=resourcesOutput)
+activeContent.report(outputLocation=resourcesOutput,includeScore=False)
 activeHours.report(outputLocation=hoursOutput)
 securityGuard.report(outputLocation=blockedOutput)

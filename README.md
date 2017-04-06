@@ -1,44 +1,88 @@
-# Table of Contents
-1. [Challenge Summary](README.md#challenge-summary)
-2. [Details of Implementation](README.md#details-of-implementation)
-3. [Download Data](README.md#download-data)
-4. [Description of Data](README.md#description-of-data)
-5. [Writing clean, scalable, and well-tested code](README.md#writing-clean-scalable-and-well-tested-code)
-6. [Repo directory structure](README.md#repo-directory-structure)
-7. [Testing your directory structure and output format](README.md#testing-your-directory-structure-and-output-format)
-8. [Instructions to submit your solution](README.md#instructions-to-submit-your-solution)
-9. [FAQ](README.md#faq)
-
-
 # Challenge Summary
 
-Picture yourself as a backend engineer for a NASA fan website that generates a large amount of Internet traffic data. Your challenge is to perform basic analytics on the server log file, provide useful metrics, and implement basic security measures. 
 
-The desired features are described below: 
+ Process log data to implement:
+  1. List the top 10 most active host/IP addresses that have accessed the site.
+		  output: 2nd argument		example: '../log_output/hosts.txt'
+  2. Identify the 10 resources that consume the most bandwidth on the site.
+		  output: 4th argument 		example: '../log_output/resources.txt'
+  3. List the top 10 busiest (or most frequently visited) 60-minute periods.
+        output: 3rd argument		example: '../log_output/hours.txt'
+  4. Detect patterns of three failed login attempts from the same IP address over 20 seconds.
+        Block for 5 minutes. 
+        Log possible security breaches.
+        output: 5th argument 		example: '../log_output/blocked.txt'
 
-### Feature 1: 
-List the top 10 most active host/IP addresses that have accessed the site.
+  input: 1st argument 				example: '../log_input/log.txt'
+  
+  dependencies:
+  	topList.py
+  	securityCheck.py
+  imports:
+	datetime
+	sys
 
-### Feature 2: 
-Identify the 10 resources that consume the most bandwidth on the site
+The python script which implements these features leverages 2 classes, topList and securityCheck—both of which use hashmaps to maintain near O(1) runspeed scaling up to millions of unique hosts and resources.
 
-### Feature 3:
-List the top 10 busiest (or most frequently visited) 60-minute periods 
+topList documentation:
+	topList is a class for managing rankings of names based on a metric. The top
+	listLength number of rankings will be maintained, with all other names and scores
+	summed in a hashmap self.memoHash. 
+	
+	Once constructed with topList(), new values can be considered for the list with
+	self.consider(eventName, scoreIncrement). If using datetimes as names, and the
+	constructor was called with isDate=True, only the scoreIncrement is used for the
+	ranking (it is not added to a hashmapped sum).
+	
+	self.report(outputLocation=outputLocation,includeScore=True) will write the
+	contents of names and scores to a file at string location outputLocation.
+	
+	self.report(outputLocation=None) will print the lists to the screen.
+	
+	variables:
+		names		list, ordered from first to last by score
+		scores		list, sorted largest to smallest
+		listMinimum	smallest score on the list
+		memoHash	dictionary mapping names to scores
+		listLength	number of top rankings to maintain
 
-### Feature 4: 
-Detect patterns of three failed login attempts from the same IP address over 20 seconds so that all further attempts to the site can be blocked for 5 minutes. Log those possible security breaches.
+securityCheck documentation:
 
-
-### Other considerations and optional features
-It's critical that these features don't take too long to run. For example, if it took too long to detect three failed login attempts, further traffic from the same IP address couldn’t be blocked immediately, and that would present a security breach.
-This dataset is inspired by real NASA web traffic, which is very similar to server logs from e-commerce and other sites. Monitoring web traffic and providing these analytics is a real business need, but it’s not the only thing you can do with the data. Feel free to implement additional features that you think might be useful.
-
-## Details of Implementation
-With this coding challenge, you should demonstrate a strong understanding of computer science fundamentals. We won't be wowed by your knowledge of various available software libraries, but will be impressed by your ability to pick and use the best data structures and algorithms for the job.
-
-We're looking for clean, well-thought-out code that correctly implements the desired features in an optimized way and highlights your ability to write production-quality code.
-
-We also want to see how you use your programming skills to solve business problems. At a minimum, you should implement the four required features, but feel free to expand upon this challenge or add other features you think would prevent fraud and further business goals. Be sure to document these add-ons so we know to look for them.
+	securityCheck is a class that takes HTTP information as input to maintain a block list
+		of hosts based on 401 login errors. Blocked hosts and login history are stored
+		in hashmaps.
+		
+		public methods:
+		
+			securityCheck() constructor has a default host blockLength of 300 seconds,
+			a default number of offensesBeforeBlock of 3, and a default blockCooldown
+			of 20 seconds.
+			
+			securityCheck(blockLength=300,offensesBeforeBlock=3,blockCooldown=20)
+			constructs with customized parameters, listed here with the defaults.
+			
+			self.assess(request,host,requestDateTime,command,replyCode) is a method which
+				evaluates a string HTTP request based on the host source, datetime formatted
+				time of that request, string HTTP command, and integer HTTP reply code.
+			
+			self.report() will print the list of blocked HTTP requests to screen.
+			
+			self.report(outputLocation) will write the list of blocked HTTP requests to a
+				file at string outputLocation.
+				
+			variables:
+				blocked			Dictionary mapping hosts to datetime of first blocking
+				blockedRequests List of all HTTP requests recommended for blocking
+				loginHash 		Dictionary mapping hosts to the number of times they
+								have failed to log in during the last blockCooldown number
+								of seconds (after removeOldEventsSC(host,requestDateTime)
+								has been called)
+				blockLength 	How long in seconds a block will last.
+				offensesBeforeBlock, the number of times a host can see a 401 error before
+								recommendation for blocking.
+				blockCooldown	The number of seconds until 401 errors are forgiven for
+								block decisions.
+												
 
 ### Feature 1 
 List in descending order the top 10 most active hosts/IP addresses that have accessed the site.
@@ -107,9 +151,8 @@ The following illustration may help you understand how this feature might work, 
 
 Note that this feature should not impact the other features in this challenge. For instance, any requests that end up in the `blocked.txt` file should be counted toward the most active IP host calculation, bandwidth consumption and busiest 60-minute period.
 
-### Additional Features
 
-Feel free to implement additional features that might be useful to derive further metrics or prevent harmful activity. These features will be considered as bonus while evaluating your submission. If you choose to add extras please document them in your README and make sure that they don't interfere with the above four (e.g. don't alter the output of the four core features).
+
 
 ## Download Data
 You can download the data here: https://drive.google.com/file/d/0B7-XWjN4ezogbUh6bUl1cV82Tnc/view

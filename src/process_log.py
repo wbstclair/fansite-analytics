@@ -28,7 +28,6 @@ def removeOldEvents(eventList, datetimeEvent, secondsOld):
 	for event in eventList:
 		timeDifference = datetimeEvent - event
 		if int(timeDifference.total_seconds()) > secondsOld:
-			#print str(event)
 			eventList.remove(event)
 		else:
 			break
@@ -55,7 +54,7 @@ months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', \
 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 lastHour = list()
 
-lineNum = 1
+
 with open(logInput,'r') as logFile:
 	for request in logFile:
 		# Parse the request
@@ -76,7 +75,7 @@ with open(logInput,'r') as logFile:
 		requestDateTime = datetime.datetime(int(year), \
 		int(month),int(day),int(hour),int(minute),int(second))
 
-		commandParse = request.split("'")[0]
+		commandParse = request.split('"')
 		commandParse = commandParse[1]
 		commandParse = commandParse.split()
 		if len(commandParse) > 1:
@@ -100,7 +99,8 @@ with open(logInput,'r') as logFile:
 		activeContent.consider(content,bytes)
 		securityGuard.assess(request,host,requestDateTime,command,replyCode)
 
+
 activeHosts.report(outputLocation=hostsOutput)
-activeContent.report(outputLocation=resourcesOutput)
+activeContent.report(outputLocation=resourcesOutput,includeScore=False)
 activeHours.report(outputLocation=hoursOutput)
 securityGuard.report(outputLocation=blockedOutput)

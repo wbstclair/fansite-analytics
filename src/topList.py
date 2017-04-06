@@ -1,7 +1,26 @@
 import datetime
 class topList:
 	"""
-		Class for managing rankings of names based on a metric.
+		topList is a class for managing rankings of names based on a metric. The top
+		listLength number of rankings will be maintained, with all other names and scores
+		summed in a hashmap self.memoHash. 
+		
+		Once constructed with topList(), new values can be considered for the list with
+		self.consider(eventName, scoreIncrement). If using datetimes as names, and the
+		constructor was called with isDate=True, only the scoreIncrement is used for the
+		ranking (it is not added to a hashmapped sum).
+		
+		self.report(outputLocation=outputLocation,includeScore=True) will write the
+		contents of names and scores to a file at string location outputLocation.
+		
+		self.report(outputLocation=None) will print the lists to the screen.
+		
+		variables:
+			names		list, ordered from first to last by score
+			scores		list, sorted largest to smallest
+			listMinimum	smallest score on the list
+			memoHash	dictionary mapping names to scores
+			listLength	number of top rankings to maintain
 	"""
 	def __init__(self,listLength=10,isDate=False):
 		self.names = list()
@@ -69,7 +88,8 @@ class topList:
 	
 	def nameFormat(self,name):
 		if self.isDate:
-			outputString = str(name)
+			outputString = name.strftime("%d/%b/%Y:%I:%M:%S -0400")
+			#outputString = str(name)
 		else:
 			outputString = name
 		return outputString
