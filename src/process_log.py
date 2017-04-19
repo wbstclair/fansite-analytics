@@ -22,6 +22,7 @@ import datetime
 import sys
 import topList
 import securityCheck
+import binnedTopList
 
 def removeOldEvents(eventList, datetimeEvent, secondsOld):
 	# remove old events
@@ -49,11 +50,12 @@ activeHosts = topList.topList()
 activeContent = topList.topList()
 activeHours = topList.topList(isDate=True)
 securityGuard = securityCheck.securityCheck()
+dailyTopHours = binnedTopList.binnedTopList()
+
 
 months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', \
 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 lastHour = list()
-
 
 with open(logInput,'r') as logFile:
 	for request in logFile:
@@ -90,6 +92,7 @@ with open(logInput,'r') as logFile:
 		command=commandParse[0]
 		replyCode = int(requestData[len(requestData)-2])
 		
+		
 		activeHosts.consider(host,1)
 		
 		lastHour.append(requestDateTime)				
@@ -100,12 +103,18 @@ with open(logInput,'r') as logFile:
 		activeHours.consider(lastHour[0],len(lastHour))
 		activeContent.consider(content,bytes)
 		securityGuard.assess(request,host,requestDateTime,command,replyCode)
+		
+		dailyTopHours.consider(requestDateTime)
 
 # Empty remaining events in lastHour for consideration
 remainingHours = len(lastHour)
 for remainingHour in range(0,remainingHours):
 	requestDateTime = lastHour.pop(0)
 	activeHours.consider(requestDateTime,len(lastHour)+1)
+
+dailyTopHours.finalize()
+#dailyTopHours.report(outputLocation='../log_output/hoursBinned.txt')
+dailyTopHours.report()
 
 activeHosts.report(outputLocation=hostsOutput)
 activeContent.report(outputLocation=resourcesOutput,includeScore=False)

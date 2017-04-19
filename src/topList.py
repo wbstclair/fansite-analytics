@@ -72,17 +72,21 @@ class topList:
 			or len(self.scores) < self.listLength:
 				self.add(eventName,self.memoHash[eventName])
 	
-	def report(self,outputLocation=None,includeScore=True):
+	def report(self,outputLocation=None,includeScore=True,truncateFile=True):
 		scoreReport = ''
 		if outputLocation == None:
+			print '\n'
 			for topNum in range(0,len(self.names)):
 				if includeScore:
 					scoreReport = ',' + str(self.scores[topNum])
-				print nameFormat(self.names[topNum]) + scoreReport + '\n'
+				print self.nameFormat(self.names[topNum]) + scoreReport
 		else:
 			with open(outputLocation,'a') as outputFile:
-				outputFile.seek(0)
-				outputFile.truncate()
+				if truncateFile == True:
+					outputFile.seek(0)
+					outputFile.truncate()
+				else:
+					outputFile.write('\n\n')
 				for topNum in range(0,len(self.names)):
 					if includeScore:
 						scoreReport = ',' + str(self.scores[topNum])
