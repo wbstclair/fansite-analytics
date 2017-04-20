@@ -76,7 +76,7 @@ with open(logInput,'r') as logFile:
 		timeZone = timeZone.replace(']','')
 		requestDateTime = datetime.datetime(int(year), \
 		int(month),int(day),int(hour),int(minute),int(second))
-
+		
 		commandParse = request.split('"')
 		commandParse = commandParse[1]
 		commandParse = commandParse.split()
@@ -95,7 +95,7 @@ with open(logInput,'r') as logFile:
 		
 		activeHosts.consider(host,1)
 		
-		lastHour.append(requestDateTime)				
+		lastHour.append(requestDateTime)
 		lastHour = removeOldEvents(lastHour,requestDateTime, 3600)
 		
 		#activeHours.consider(requestDateTime - datetime.timedelta(hours=1),len(lastHour))

@@ -14,6 +14,10 @@ class binnedTopList:
 		self.report(outputLocation=None) will print the lists to the screen. Must
 		finalize before reporting if recent intervals are to be included.
 		
+		self.finalize() empties the current cached events and considers their associated
+		time intervals for the current topList. Emptied events will not be considered
+		for future intervals, so only finalize() when all data is complete. 
+		
 		variables:
 			hourLists	        list, each element is a topList
 			binTimes	        list, contains the datetime start of each topList
